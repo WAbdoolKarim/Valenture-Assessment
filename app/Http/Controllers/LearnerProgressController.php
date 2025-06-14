@@ -11,7 +11,7 @@ function getSortProgress($learner, $search)
         return $learner->courses->avg('pivot.progress') ?? 0;
     }
 
-    // Get progress only for matching courses
+    // Get progress only for matching courses when course search active
     $matchingCourses = $learner->courses->filter(fn($course) =>
         stripos($course->name, $search) !== false);
 
@@ -24,13 +24,12 @@ class LearnerProgressController extends Controller
 public function index(Request $request)
 {
     $search = $request->input('search');
-    $sort = $request->input('sort', 'name'); // default: alphabetical
+    $sort = $request->input('sort', 'name');
     $showAllCourses = $request->boolean('show_all_courses');
 
-    // Eager-load all courses (we’ll filter in memory)
     $learners = Learner::with('courses')->get();
 
-    // If search is active, only keep learners enrolled in at least one matching course
+    // If search is active, only keep learners who are enrolled in at least one matching course
     if ($search) {
         $learners = $learners->filter(function ($learner) use ($search) {
             return $learner->courses->contains(fn($course) =>
@@ -38,7 +37,7 @@ public function index(Request $request)
         });
     }
 
-    // Define how to compute progress for sorting
+    // Define sorting requirements
     $learners = match ($sort) {
         'highest' => $learners->sortByDesc(function ($learner) use ($search) {
             return getSortProgress($learner, $search);
