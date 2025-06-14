@@ -6,86 +6,126 @@
     @vite('resources/css/app.css')
 </head>
 <body class="bg-gray-100 min-h-screen p-6">
-    <div class="max-w-7xl mx-auto space-y-6">
+<div class="max-w-7xl mx-auto space-y-6">
 
-<!-- Title and Search bar-->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-    <h1 class="text-3xl font-semibold text-gray-800 mb-4 sm:mb-0">Learner Progress</h1>
+    <!-- Title and Search bar-->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-3xl font-semibold text-gray-800 mb-4 sm:mb-0">Learner Progress</h1>
 
-    <form method="GET" class="bg-white rounded-2xl p-4 shadow-md flex flex-col sm:flex-row sm:items-center gap-3">
-        <input
-            type="text"
-            name="search"
-            placeholder="Filter by course"
-            value="{{ $search ?? '' }}"
-            class="w-full sm:w-52 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-        >
-
-        <select
-            name="sort"
-            class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-        >
-            <option value="name" {{ $sort === 'name' ? 'selected' : '' }}>A–Z by name</option>
-            <option value="highest" {{ $sort === 'highest' ? 'selected' : '' }}>Highest Avg Progress</option>
-            <option value="lowest" {{ $sort === 'lowest' ? 'selected' : '' }}>Lowest Avg Progress</option>
-        </select>
-
-        <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+        <form method="GET" class="bg-white rounded-2xl p-4 shadow-md flex flex-col sm:flex-row sm:items-center gap-3">
             <input
-                type="checkbox"
-                name="show_all_courses"
-                value="1"
-                {{ $showAllCourses ? 'checked' : '' }}
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    type="text"
+                    name="search"
+                    placeholder="Filter by course"
+                    value="{{ $search ?? '' }}"
+                    class="w-full sm:w-52 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             >
-            Show all courses
-        </label>
 
-        <button
-            type="submit"
-            class="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
-        >
-            Apply
-        </button>
-    </form>
+            <select
+                    name="sort"
+                    class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+                <option value="name" {{ $sort===
+                'name' ? 'selected' : '' }}>A–Z by name</option>
+                <option value="highest" {{ $sort===
+                'highest' ? 'selected' : '' }}>Highest Avg Progress</option>
+                <option value="lowest" {{ $sort===
+                'lowest' ? 'selected' : '' }}>Lowest Avg Progress</option>
+            </select>
+
+            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                <input
+                        type="checkbox"
+                        name="show_all_courses"
+                        value="1"
+                        {{ $showAllCourses ? 'checked' : '' }}
+                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                >
+                Show all courses
+            </label>
+
+            <button
+                    type="submit"
+                    class="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+            >
+                Apply
+            </button>
+        </form>
+    </div>
+
+    <!-- Learner Table -->
+    <div class="bg-white rounded-2xl shadow-md overflow-x-auto">
+    <table class="min-w-full text-sm text-gray-700 divide-y divide-gray-200">
+        <thead class="bg-gray-300 text-xs uppercase text-gray-800 font-semibold">
+            <tr>
+                <th class="px-4 py-2 text-left">Learner</th>
+                <th class="px-4 py-2 text-left">Avg Progress</th>
+                <th class="px-4 py-2 text-left">Courses</th>
+                <th class="px-4 py-2"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            @forelse ($learners as $learner)
+                @php
+                    $rowId = 'learner-' . $learner->id;
+                    $avg = number_format($learner->courses->avg('pivot.progress'), 2);
+                @endphp
+                <tr>
+                    <td class="px-4 py-3 font-medium">{{ $learner->full_name }}</td>
+                    <td class="px-4 py-3">{{ $avg }}%</td>
+                    <td class="px-4 py-3">{{ $learner->courses->count() }}</td>
+                    <td class="px-4 py-3 text-right">
+                        <button
+                            onclick="toggleDetails('{{ $rowId }}')"
+                            class="text-gray-500 hover:text-blue-600 transition"
+                            aria-label="Toggle course list"
+                        >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                        </button>
+                    </td>
+                </tr>
+                <tr id="{{ $rowId }}" class="hidden bg-gray-50">
+                    <td colspan="4" class="px-4 pb-4">
+                        <table class="w-full text-sm mt-2 border border-gray-200 rounded-md overflow-hidden">
+                            <thead class="bg-gray-100 text-left text-xs text-gray-600 uppercase">
+                                <tr>
+                                    <th class="px-3 py-2">Course</th>
+                                    <th class="px-3 py-2">Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach ($learner->courses as $course)
+                                    @if (!$search || $showAllCourses || stripos($course->name, $search) !== false)
+                                        <tr>
+                                            <td class="px-3 py-2">{{ $course->name }}</td>
+                                            <td class="px-3 py-2">{{ number_format($course->pivot->progress, 2) }}%</td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="4" class="px-4 py-4 text-center text-gray-500">No learners match your filters.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
 </div>
 
-        <!-- Learner Table -->
-        <div class="bg-white rounded-2xl shadow-md overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-200">
-    <tr>
-        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Learner</th>
-        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Courses & Progress</th>
-    </tr>
-</thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($learners as $learner)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                {{ $learner->full_name }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-700">
-                                <ul class="list-disc pl-5 space-y-1">
-                                    @foreach ($learner->courses as $course)
-                                        @if (!$search || $showAllCourses || stripos($course->name, $search) !== false)
-                                            <li>
-                                                <span class="font-medium">{{ $course->name }}</span>
-                                                — {{ number_format($course->pivot->progress, 2) }}%
-                                            </li>
-                                        @endif
-                                    @endforeach
-                                </ul>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="2" class="px-6 py-4 text-center text-gray-500">No learners match your filters.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+<!-- JS to handle toggle for full course details -->
+<script>
+    function toggleDetails(id) {
+        const row = document.getElementById(id);
+        if (row) {
+            row.classList.toggle('hidden');
+        }
+    }
+</script>
+</div>
 </body>
 </html>
