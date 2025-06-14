@@ -18,4 +18,15 @@ class Learner extends Model
         'firstname',
         'lastname',
     ];
+
+    public function courses()
+{
+    return $this->belongsToMany(Course::class, 'enrolments')
+        ->withPivot('progress');
+}
+
+public function getFullNameAttribute()
+{
+    return "{$this->firstname} {$this->lastname}";
+}
 }

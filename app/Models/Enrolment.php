@@ -39,4 +39,6 @@ class Enrolment extends Model
     protected $casts = [
         'progress' => 'decimal:2',
     ];
+
+    
 }

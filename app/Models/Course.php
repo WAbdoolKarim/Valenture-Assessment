@@ -17,4 +17,10 @@ class Course extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function learners()
+{
+    return $this->belongsToMany(Learner::class, 'enrolments')
+        ->withPivot('progress');
+}
 }
